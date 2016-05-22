@@ -1,0 +1,7 @@
+indexes:
+
+- kind: User
+  ancestor: no
+  properties:
+  - name: UID
+  - name: username

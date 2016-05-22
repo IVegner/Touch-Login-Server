@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+</head>
+<body>
+	{% if user%}
+	<h2>Greetings, {{user.firstName}}</h2>
+	<p>{{user}}</p>
+	{% endif %}
+	<a href="http://localhost:8080/oauth/authorize?id={{id}}" target = "_blank">Log in with TouchLogin</a>
+	<a href="/logout">Log Out</a>
+</body>
+</html>

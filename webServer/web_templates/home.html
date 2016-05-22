@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+	{% block title %}TouchLogin - Home{% endblock %}
+	{% block content %}
+		{% if g.user %}
+			<p>Welcome, {{g.user.firstName}}!</p>
+		{% else %}
+			<p>Welcome, guest!</p>
+		{% endif %}
+		<button><a href = {{url_for("login")}}>Login</a></button>
+		<button><a href = {{url_for("register")}}>Register</a></button>
+	{% endblock %}

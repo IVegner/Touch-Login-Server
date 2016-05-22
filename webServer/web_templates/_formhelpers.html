@@ -1,0 +1,13 @@
+{% macro render_field(field, in_group = False) %}
+  {% if not in_group %} <div class="form-group">{% endif %}
+
+  {{ field.label }}
+  {{ field(**kwargs)|safe }}
+  {% if field.errors %}
+    {% for error in field.errors %}
+      <div class="alert alert-danger fade in">{{ error }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {% if not in_group %}</div>{% endif %}
+{% endmacro %}

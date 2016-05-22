@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+	{% block title %}TouchLogin - Login{% endblock %}
+	{% block scripts %}<script type="text/javascript" src="{{ url_for('static', filename='js/login.js') }}"></script>{% endblock %}
+	{% block content %}
+		{% if not g.user %}
+		<p>Please log in:</p>
+		<ul class="nav nav-tabs tabbed">
+		  <li class="active"><a data-toggle="tab" href="#touchLoginTab">Touch Login</a></li>
+		  <li><a data-toggle="tab" href="#traditionalLoginTab">Login-Pass Login (debug only)</a></li>
+		</ul>
+
+		<div class="tab-content tabbed">
+			<div id="touchLoginTab" class="tab-pane fade in active">
+				<p> This is where the TouchLogin stuff goes. </p>
+				<div id="touchLoginForm">
+					Username:<br>
+					<input type="text" id="username">
+					<button id="touchLoginButton">Login with TouchLogin</button>
+				</div> 
+	  		</div>
+			<div id="traditionalLoginTab" class="tab-pane fade">
+				<form method="post" action="/login">
+					<input type="text" name="username">
+					<input type="password" name="password">
+					<input type="hidden" name="next" value= {{next or ''}}>
+					<input type="submit">
+				</form>
+			</div>
+		</div>
+		<div id="touchLoginStatus">
+			<p id="authStatusMessage">Sending auth request to linked iPhone</p>
+		</div>
+
+		{% else %}
+		<p> You are logged in as {{g.user.username}} </p>
+		<a href = "/logout">Log out</a>
+		{% endif %}
+	{% endblock %}

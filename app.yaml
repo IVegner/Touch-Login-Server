@@ -1,0 +1,21 @@
+application: touch-login
+version: alpha-010
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /_ah/spi/.*
+  script: api.TouchLoginAPI.APPLICATION
+  secure: always
+- url: /.*
+  script: webServer.webServer.app
+
+libraries:
+- name: pycrypto
+  version: latest
+- name: endpoints
+  version: 1.0
+- name: ssl
+  version: latest
+

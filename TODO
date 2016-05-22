@@ -1,0 +1,16 @@
+TODO:
+
+App:
+make token set with registration
+split up into several files
+set badge from inside app
+replies to authentication requests
+
+Web:
+Hashes for passwords
+Scopes for OAuth
+use Flask-Assets
+non-duplicate emails and usernames
+fix user getting logged out after oauth flow
+PROFILE
+integrate w/app

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+	{% block title %}TouchLogin{% endblock %}
+	
+	{% block navbar %}
+	<nav class="navbar navbar-default">
+		<div class = "container-fluid">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="{{ url_for("home") }}">TouchLogin</a>
+			</div>
+			<div class="collapse navbar-collapse" id="navbar">
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="/profile"><span class="glyphicon glyphicon-user"></span> {{g.user.username}}</a></li>
+					<li><a href="{{ url_for('logout') }}">Logout</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	{% endblock %}
+	
+
+	{% block content %}
+	<p>Client: {{ client.client_id }}</p>
+	<p>User: {{ g.user.username }}</p>
+	<form action="/oauth/getcode" method="post">
+		<p>Allow access?</p>
+		<input type="hidden" name="client_id" value="{{ client.client_id }}">
+		<input type="hidden" name="redirect_uri" value="{{ client.redirect_url }}">
+		<input type="submit" name="confirm_yes" value="yes">
+		<input type="submit" name="confirm_no" value="no">
+	</form>
+	{% endblock %}
