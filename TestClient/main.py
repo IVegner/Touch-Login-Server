@@ -10,6 +10,7 @@ app.debug = True
 client_id = "TestClient"
 client_secret = "secret"
 app.secret_key = "jiamjwolvma4io82u984um9mua9ufm98q2u298"
+AUTH_SERVER_ROOT = "http://touch-login.appspot.com/"
 
 @app.route('/')
 def home():
@@ -20,12 +21,12 @@ def home():
 def redirectFunc():
 	code = request.args.get("code")
 	tokenRequest = {'client_id': client_id, "client_secret": client_secret, "code": code}
-	res = requests.post('http://localhost:8080/oauth/getToken', data=tokenRequest)
+	res = requests.post(AUTH_SERVER_ROOT + '/oauth/getToken', data=tokenRequest)
 	res = dict(res.json())
 	if res and (res.get("error") is None): 
 		accessToken = res.get("access_token")
 		dataRequest = {"client_id": client_id, "client_secret": client_secret, "access_token": accessToken}
-		userData = requests.get("http://localhost:8080/oauth/getUserData", params = dataRequest)
+		userData = requests.get(AUTH_SERVER_ROOT + "/oauth/getUserData", params = dataRequest)
 		userData = dict(userData.json())
 		session["user"] = userData
 		print(session.get("user"))
@@ -39,6 +40,6 @@ def logout():
 	flash("You have been logged out", "success")
 	return redirect(url_for("home"))
 
-if __name__ == '__main__':
-	run_simple('localhost', 5000, app,
-			   use_reloader=True, use_debugger=True, use_evalex=True)
+# if __name__ == '__main__':
+# 	run_simple('localhost', 5000, app,
+# 			   use_reloader=True, use_debugger=True, use_evalex=True)

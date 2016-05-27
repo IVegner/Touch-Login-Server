@@ -3,11 +3,13 @@ from flask import session, redirect, url_for, request, flash, g, Markup
 import string
 import random
 from shared.models import User
+import logging
 
 def login_required(f):
 	@wraps(f)
 	def decorated_function(*args, **kwargs):
 		if session.get('username') is not None:
+			logging.debug(g.user)
 			if g.user.confirmed == True:
 				return f(*args, **kwargs)
 			else:

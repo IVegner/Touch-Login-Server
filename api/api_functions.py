@@ -26,12 +26,14 @@ def verifyUser(username, origin):
 		#notifications.sendNotification(token, "Identifier: {0}".format(identifier), authenticationRequestTimeout)	#temporary, lets tester know the identifier
 		while(timeout < authenticationRequestTimeout):	#Wait for authentication, times out after preset time
 			request = Request.query(Request.identifier == str(identifier)).get(use_cache=False, use_memcache=False)
-			if request is not None and request.resolved == True:
+			if request is not None and request.resolved == 1:
 				return FunctionReturn("Authenticated",  0)
 			else: 
 				timeout += 0.5
 				time.sleep(0.5)
 		else: 
+			request.resolved = -1
+			request.put()
 			return FunctionReturn("Authentication Request Timed Out",  4)
 
 	else:
@@ -55,7 +57,7 @@ def authenticationConfirm(username, identifier, UID):
 			request = Request.query(Request.identifier == str(identifier)).get()
 			if request is not None:	#if the request exists
 				logging.warning("Request found.")
-				request.resolved = True
+				request.resolved = 1
 				request.put()
 				return FunctionReturn("Authenticated",  0)
 			else:

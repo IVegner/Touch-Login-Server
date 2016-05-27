@@ -11,14 +11,16 @@
 
 		<div class="tab-content tabbed">
 			<div id="touchLoginTab" class="tab-pane fade in active">
-				<p> This is where the TouchLogin stuff goes. </p>
-				<div id="touchLoginForm">
+				<br>
+				<form id="touchLoginForm">
 					Username:<br>
 					<input type="text" id="username">
-					<button id="touchLoginButton">Login with TouchLogin</button>
-				</div> 
+					<input type="hidden" name="next" value= {{next or ''}}>
+					<input type="submit" id="touchLoginButton" value="Login with TouchLogin">
+				</form> 
 	  		</div>
 			<div id="traditionalLoginTab" class="tab-pane fade">
+				<br>
 				<form method="post" action="/login">
 					<input type="text" name="username">
 					<input type="password" name="password">

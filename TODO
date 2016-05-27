@@ -14,3 +14,4 @@ non-duplicate emails and usernames
 fix user getting logged out after oauth flow
 PROFILE
 integrate w/app
+check for username in touch login tab

@@ -1,13 +1,17 @@
 application: touch-login
-version: alpha-010
+version: presentation-2
 runtime: python27
 api_version: 1
 threadsafe: true
+
+default_expiration: 0d 0h
 
 handlers:
 - url: /_ah/spi/.*
   script: api.TouchLoginAPI.APPLICATION
   secure: always
+- url: /test/.*
+  script: TestClient.main.app
 - url: /.*
   script: webServer.webServer.app
 

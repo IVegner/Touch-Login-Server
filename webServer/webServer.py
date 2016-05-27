@@ -10,10 +10,11 @@ import os
 from flask import Flask, session, request, render_template, redirect, url_for, g, flash
 from itsdangerous import URLSafeTimedSerializer
 
-from shared.models import Client, AuthCode, Token, User
+from shared.models import Client, AuthCode, Token, User, Request
 from forms import registerForm
 from shared.sharedFuncs import login_required, lookupByUsername
 from config import BaseConfig
+from api.api_functions import verifyUser, FunctionReturn
 
 app = Flask(__name__, template_folder='web_templates')
 app.config.from_object(BaseConfig)
@@ -36,6 +37,28 @@ app.register_blueprint(oauth)
 @app.route('/')
 def home():
 	return render_template('home.html')
+
+@app.route('/tlogin', methods=('GET', 'POST'))
+def touchLogin():
+	#call user authorization and all that stuff
+	if request.form.get("username"):
+		user = lookupByUsername(username)
+		if user:
+			requestInDB = Request.query(Request.username == username).get()
+			if not request:
+				verifyUser(request.form.get("username"), "Touch Login")
+				return FunctionReturn("Pending.", 6)
+			elif requestInDB.resolved == -1:
+				return FunctionReturn("Authentication Request Timed Out",  4)
+			elif requestInDB.resolved == 0:
+				return FunctionReturn("Pending.", 6)
+			elif requestInDB.resolved == 1:
+				session["username"]=username
+				return FunctionReturn("Authenticated",  0)
+		else:
+			return FunctionReturn("User does not exist",  1)
+	else:
+		return FunctionReturn("Username is not there.", 5)
 
 @app.route('/login', methods=('GET', 'POST'))
 def login():
