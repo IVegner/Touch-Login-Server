@@ -3,7 +3,6 @@
 from flask import Flask, render_template, request, url_for, redirect, session, flash
 import requests
 from werkzeug.serving import run_simple
-import time
 
 app = Flask(__name__)
 app.debug = True
