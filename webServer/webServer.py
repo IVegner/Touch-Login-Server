@@ -9,6 +9,7 @@ from urlparse import urlparse, urljoin
 import os
 from flask import Flask, session, request, render_template, redirect, url_for, g, flash
 from itsdangerous import URLSafeTimedSerializer
+from google.appengine.ext import ndb
 
 from shared.models import Client, AuthCode, Token, User, Request
 from forms import registerForm
@@ -92,17 +93,17 @@ def register():
 			birthday = datetime.strptime(form.birthday_month.data + '%02d'%form.birthday_day.data + form.birthday_year.data, "%b%d%Y").date(),
 			username = form.username.data
 		)
-		logging.warning(str(user))
-		sendConfirmEmail(user.email)
-
+		#logging.warning(str(user))
 		user.put()
+		sendConfirmEmail(user)
+
 		session["username"] = user.username
 
 		if not os.environ['SERVER_SOFTWARE'].startswith('Development'):	#if production, cuz mail doesn't work on dev.
 			flash("A confirmation link has been sent to your email address.")
 			return redirect(url_for("home"))
 		else:
-			token = URLSafeTimedSerializer(app.config['SECRET_KEY']).dumps(user.email, salt=app.config['SECURITY_PASSWORD_SALT'])
+			token = URLSafeTimedSerializer(app.config['SECRET_KEY']).dumps(user.key.urlsafe(), salt=app.config['SECURITY_PASSWORD_SALT'])
 			confirm_url = url_for("confirmEmail", token = token, _external = True)
 			return "<a href={0}>Confirm</a>".format(confirm_url)	#let developer do it manually
 
@@ -113,12 +114,12 @@ def confirmEmail(token):
 	serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 	logging.warning(token)
 	try:
-		email = serializer.loads(
+		key = serializer.loads(
 			token,
 			salt=app.config["SECURITY_PASSWORD_SALT"],
 			max_age=3600 # max age of confirmation token
 		)
-		user = User.query(User.email == email).get()
+		user = ndb.Key(urlsafe=key).get()
 		if not user:
 			flash("Confirmation link invalid.", "error")
 			return redirect(url_for("home"))
@@ -133,12 +134,12 @@ def confirmEmail(token):
 		return redirect(url_for("home"))
 
 @app.route("/resend/<userKey>")
-@login_required
 def resend(userKey):
-	key = ndb.Key("User", userKey)
+	key = ndb.Key(urlsafe = userKey)
 	user = key.get()
+	logging.warning(user)
 	if user:
-		sendConfirmEmail(user.email)
+		sendConfirmEmail(user)
 	return redirect(url_for("home"))
 
 
