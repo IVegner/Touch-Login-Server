@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 	{% block title %}TouchLogin - Login{% endblock %}
-	{% block scripts %}<script type="text/javascript" src="{{ url_for('static', filename='js/login.js') }}"></script>{% endblock %}
+	{% block scripts %}<script type="text/javascript" src="{{ url_for('static', filename='js/login.js')|autoversion }}"></script>{% endblock %}
 	{% block content %}
 		{% if not g.user %}
 		<p>Please log in:</p>
@@ -16,7 +16,7 @@
 					Username:<br>
 					<input type="text" id="username">
 					<input type="hidden" name="next" value= {{next or ''}}>
-					<input type="submit" id="touchLoginButton" value="Login with TouchLogin">
+					<input type="button" id="touchLoginButton" value="Login with TouchLogin">
 				</form> 
 	  		</div>
 			<div id="traditionalLoginTab" class="tab-pane fade">

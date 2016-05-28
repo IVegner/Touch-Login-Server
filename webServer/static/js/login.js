@@ -17,6 +17,7 @@ $(document).ready(function() {
 			contentType:"application/json; charset=utf-8",
 			dataType:"json",
 			success: function(data){
+				
 				clearInterval(ellipsisAnimation);
 				//alert(parseInt(data["authStatusCode"])*2);
 				var code = parseInt(data["authStatusCode"]);
@@ -50,7 +51,7 @@ $(document).ready(function() {
 				}
 			}
 		})
-
+		alert("hi");
 		$("#touchLoginStatus").show(300);
 		$(".tabbed").hide();
 	});

@@ -77,7 +77,7 @@ def login():
 			flash("Invalid credentials")
 			return redirect(url_for("login"))
 
-	return render_template('login.html', next = next)
+	return render_template('login.html', next = next, )
 
 @app.route("/register/", methods = ("GET", "POST"))
 def register():
@@ -203,3 +203,10 @@ def validateRedirect(target):
 	host_url = urlparse(request.host_url)
 	redirect_url = urlparse(urljoin(request.host_url, target))
 	return redirect_url.scheme in ('http', 'https') and host_url.netloc == redirect_url.netloc
+
+@app.template_filter('autoversion')	#so that js scripts don't cache
+def autoversion_filter(filename):
+	# determining fullpath might be project specific
+	timestamp = datetime.now().second
+	newfilename = "{0}?v={1}".format(filename, timestamp)
+	return newfilename
