@@ -5,15 +5,18 @@
 import logging
 from datetime import datetime, timedelta
 from urlparse import urlparse, urljoin
-
 import os
+import json
+
 from flask import Flask, session, request, render_template, redirect, url_for, g, flash
 from itsdangerous import URLSafeTimedSerializer
+from google.appengine.ext import ndb
 
-from shared.models import Client, AuthCode, Token, User
+from shared.models import Client, AuthCode, Token, User, Request
 from forms import registerForm
 from shared.sharedFuncs import login_required, lookupByUsername
 from config import BaseConfig
+from api.api_functions import verifyUser, FunctionReturn
 
 app = Flask(__name__, template_folder='web_templates')
 app.config.from_object(BaseConfig)
@@ -37,23 +40,69 @@ app.register_blueprint(oauth)
 def home():
 	return render_template('home.html')
 
-@app.route('/login', methods=('GET', 'POST'))
+@app.route('/login/', methods=('GET','POST'))
 def login():
+	clientId = request.args.get("clid") or "Touch Login"
 	next = request.args.get("next")
-	if request.method == 'POST':
-		username, password = request.form.get('username'), request.form.get('password')	#YES I KNOW WE'LL SWITCH TO HASHES AT SOME POINT
-		next = request.form.get("next")	#if referred from oauth flow
-		if validateUser(username, password):
-			session['username'] = username
-			if next and validateRedirect(next):
-				return redirect(next)
+	logging.debug(next)
+	#call user authorization and all that stuff
+	if request.method == 'POST':	#i.e. ajax call
+		next = request.json.get("next")
+		clientId = request.json.get("clid") or "Touch Login"
+		if request.json.get("username"):
+			user = lookupByUsername(request.json.get("username"))
+			if user:
+				requestInDB = Request.query(Request.username == user.username).get()
+				# logging.debug(str(requestInDB))
+				if not requestInDB:
+					# logging.debug("request submitted")
+					verifyUser(user.username, clientId)
+					return json.dumps(vars(FunctionReturn("Request submitted.", 6)))
+				elif requestInDB.resolved == -1:
+					flash("Authentication request timed out. Please try again.")
+					# logging.debug("2")
+					requestInDB.key.delete()
+					return json.dumps(vars(FunctionReturn("Authentication request timed out. Please try again.",  4)))
+				elif requestInDB.resolved == 0:
+					lo#gging.debug("3")
+					return json.dumps(vars(FunctionReturn("Waiting for response from linked device.", 6)))
+				elif requestInDB.resolved == 1:
+					#logging.debug("4")
+					session["username"]=user.username
+					requestInDB.key.delete()
+					logging.debug(next)
+					if next and validateRedirect(next):
+						logging.debug("redirecting to " + next)
+						return json.dumps(vars(FunctionReturn(next,  0)))
+					else:
+						return json.dumps(vars(FunctionReturn(url_for("home"),  0)))
 			else:
-				return redirect(url_for("home"))
+				# logging.debug("5")
+				return json.dumps(vars(FunctionReturn("User does not exist",  1)))
 		else:
-			flash("Invalid credentials")
-			return redirect(url_for("login"))
+			# logging.debug("6")
+			return json.dumps(FunctionReturn("Username is not there.", 5))
+	else:
+		# logging.debug("7")
+		return render_template('login.html', next = next, clientId = clientId)
 
-	return render_template('login.html', next = next)
+# @app.route('/login', methods=('GET', 'POST'))
+# def login():
+# 	next = request.args.get("next")
+# 	if request.method == 'POST':
+# 		username, password = request.form.get('username'), request.form.get('password')	#YES I KNOW WE'LL SWITCH TO HASHES AT SOME POINT
+# 		next = request.form.get("next")	#if referred from oauth flow
+# 		if validateUser(username, password):
+# 			session['username'] = username
+# 			if next and validateRedirect(next):
+# 				return redirect(next)
+# 			else:
+# 				return redirect(url_for("home"))
+# 		else:
+# 			flash("Invalid credentials")
+# 			return redirect(url_for("login"))
+
+# 	return render_template('login.html', next = next)
 
 @app.route("/register/", methods = ("GET", "POST"))
 def register():
@@ -69,17 +118,17 @@ def register():
 			birthday = datetime.strptime(form.birthday_month.data + '%02d'%form.birthday_day.data + form.birthday_year.data, "%b%d%Y").date(),
 			username = form.username.data
 		)
-		logging.warning(str(user))
-		sendConfirmEmail(user.email)
-
+		#logging.warning(str(user))
 		user.put()
+		sendConfirmEmail(user)
+
 		session["username"] = user.username
 
 		if not os.environ['SERVER_SOFTWARE'].startswith('Development'):	#if production, cuz mail doesn't work on dev.
 			flash("A confirmation link has been sent to your email address.")
 			return redirect(url_for("home"))
 		else:
-			token = URLSafeTimedSerializer(app.config['SECRET_KEY']).dumps(user.email, salt=app.config['SECURITY_PASSWORD_SALT'])
+			token = URLSafeTimedSerializer(app.config['SECRET_KEY']).dumps(user.key.urlsafe(), salt=app.config['SECURITY_PASSWORD_SALT'])
 			confirm_url = url_for("confirmEmail", token = token, _external = True)
 			return "<a href={0}>Confirm</a>".format(confirm_url)	#let developer do it manually
 
@@ -90,12 +139,12 @@ def confirmEmail(token):
 	serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 	logging.warning(token)
 	try:
-		email = serializer.loads(
+		key = serializer.loads(
 			token,
 			salt=app.config["SECURITY_PASSWORD_SALT"],
 			max_age=3600 # max age of confirmation token
 		)
-		user = User.query(User.email == email).get()
+		user = ndb.Key(urlsafe=key).get()
 		if not user:
 			flash("Confirmation link invalid.", "error")
 			return redirect(url_for("home"))
@@ -110,12 +159,12 @@ def confirmEmail(token):
 		return redirect(url_for("home"))
 
 @app.route("/resend/<userKey>")
-@login_required
 def resend(userKey):
-	key = ndb.Key("User", userKey)
+	key = ndb.Key(urlsafe = userKey)
 	user = key.get()
+	logging.warning(user)
 	if user:
-		sendConfirmEmail(user.email)
+		sendConfirmEmail(user)
 	return redirect(url_for("home"))
 
 
@@ -178,4 +227,13 @@ def validateUser(username, password):
 def validateRedirect(target):
 	host_url = urlparse(request.host_url)
 	redirect_url = urlparse(urljoin(request.host_url, target))
+	logging.critical(str(redirect_url))
 	return redirect_url.scheme in ('http', 'https') and host_url.netloc == redirect_url.netloc
+
+@app.template_filter('autoversion')	#so that js scripts don't cache
+def autoversion_filter(filename):
+	# determining fullpath might be project specific
+	now = datetime.now()
+	timestamp = str(now.minute) + str(now.second)
+	newfilename = "{0}?v={1}".format(filename, timestamp)
+	return newfilename

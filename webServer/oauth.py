@@ -37,13 +37,13 @@ def getAuthCode():
 						  user = g.user.key, code = code, expires = datetime.now() + timedelta(seconds=app.config["AUTHCODE_EXPIRATION"]))
 		codeDB.put()
 		taskqueue.add(url='/_expire-authcode', params={'code': code, "secret": app.config["QUEUE_SECRET"]}, method="GET", countdown = app.config["AUTHCODE_EXPIRATION"])
-		return redirect("http://{0}?code={1}&expires={2}".format(redirectUrl, code, app.config["AUTHCODE_EXPIRATION"]))
+		return redirect("{0}?code={1}&expires={2}".format(redirectUrl, code, app.config["AUTHCODE_EXPIRATION"]))
 	else:
 		logging.warning("DID NOT CONFIRM")
 		return "<script>window.close()</script>"
 
 @oauth.route("/oauth/getToken", methods = ("GET", "POST"))
-def getToken():		#client does thissfahkhasfa
+def getToken():		#client does this
 	client = lookupClientByID(request.form.get("client_id"))
 	#logging.warning("CLIENT ID: " + str(request.form.get("client_id")))
 	if client and client.client_secret == request.form.get("client_secret"):

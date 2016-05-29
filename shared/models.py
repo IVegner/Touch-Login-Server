@@ -5,7 +5,8 @@ from google.appengine.ext import ndb
 class Request(ndb.Model):
 	username = ndb.StringProperty()
 	identifier = ndb.StringProperty()
-	resolved = ndb.BooleanProperty(default = False)
+	resolved = ndb.IntegerProperty(default = 0)
+	addedOn = ndb.DateTimeProperty(auto_now_add=True)
 
 class User(ndb.Model):	#database entity class with a bunch of properties
 	UID = ndb.StringProperty()

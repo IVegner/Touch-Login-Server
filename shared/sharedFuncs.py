@@ -3,20 +3,22 @@ from flask import session, redirect, url_for, request, flash, g, Markup
 import string
 import random
 from shared.models import User
+import logging
 
 def login_required(f):
 	@wraps(f)
 	def decorated_function(*args, **kwargs):
 		if session.get('username') is not None:
+			#logging.debug("Debug of g.user: " + str(g.user))
 			if g.user.confirmed == True:
 				return f(*args, **kwargs)
 			else:
 				flash(Markup("Please confirm your email first. Didn\'t get the email? <a href=\"%s\">Resend</a>."
-							 %url_for("resend", email = g.user.key.urlsafe), "error"))
+							 %url_for("resend", userKey = g.user.key.urlsafe())), "error")
 				return redirect(url_for("home"))
 		else:
 			flash('Please log in first.', 'error')
-			return redirect(url_for('login', next=request.url))
+			return redirect(url_for('login', next=request.url, clid=request.args.get("clid")))
 	return decorated_function
 
 def randomString(size = 32):
