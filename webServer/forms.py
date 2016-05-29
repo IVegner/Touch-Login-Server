@@ -34,4 +34,6 @@ class registerForm(Form):
 	birthday_day = StringField("Day", validators = [Required(), CheckIfValidDay])
 	_years = range(1910, datetime.date.today().year+1)
 	birthday_year = SelectField("Year", choices = [(str(i), str(i)) for i in _years], validators = [Required()])
-	# password
+
+# class loginForm(Form):
+# 	username = StringField("Username", validators=[Required()])

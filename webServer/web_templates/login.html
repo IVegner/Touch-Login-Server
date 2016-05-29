@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 	{% block title %}TouchLogin - Login{% endblock %}
-	{% block scripts %}<script type="text/javascript" src="{{ url_for('static', filename='js/login.js')|autoversion }}"></script>{% endblock %}
+	{% block scripts %}
+	<script type="text/javascript" src="{{ url_for('static', filename='js/login.js')|autoversion }}"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.15.0/jquery.validate.js"></script>
+	{% endblock %}
 	{% block content %}
 		{% if not g.user %}
 		<p>Please log in:</p>
@@ -10,27 +13,30 @@
 		</ul>
 
 		<div class="tab-content tabbed">
-			<div id="touchLoginTab" class="tab-pane fade in active">
-				<br>
-				<form id="touchLoginForm">
-					Username:<br>
-					<input type="text" id="username">
-					<input type="hidden" name="next" value= {{next or ''}}>
-					<input type="button" id="touchLoginButton" value="Login with TouchLogin">
-				</form> 
+			<div id="touchLoginTab" class="tab-pane fade in active form-group">
+				<div class="col-xs-4">
+					<form id="touchLoginForm" name="touchLoginForm" action="javascript:void(0);">
+						<fieldset class="form-group">
+							<label for="username">Username</label><br>
+							<input type="text" class="form-control" id="username" name="username">
+							<input type="hidden" id="next" value= {{next or ''}}>
+							<input type="hidden" id="clid" value= {{clientId or ''}}>
+						</fieldset>
+						<input type="submit" class="btn btn-primary" value="Login with TouchLogin">
+					</form>
+				</div>
 	  		</div>
-			<div id="traditionalLoginTab" class="tab-pane fade">
+<!-- 			<div id="traditionalLoginTab" class="tab-pane fade">
 				<br>
 				<form method="post" action="/login">
 					<input type="text" name="username">
 					<input type="password" name="password">
-					<input type="hidden" name="next" value= {{next or ''}}>
 					<input type="submit">
 				</form>
-			</div>
+			</div> -->
 		</div>
 		<div id="touchLoginStatus">
-			<p id="authStatusMessage">Sending auth request to linked iPhone</p>
+			<p id="authStatusMessage"></p>
 		</div>
 
 		{% else %}

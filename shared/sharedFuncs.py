@@ -18,7 +18,7 @@ def login_required(f):
 				return redirect(url_for("home"))
 		else:
 			flash('Please log in first.', 'error')
-			return redirect(url_for('login', next=request.url))
+			return redirect(url_for('login', next=request.url, clid=request.args.get("clid")))
 	return decorated_function
 
 def randomString(size = 32):

@@ -5,8 +5,9 @@
 import logging
 from datetime import datetime, timedelta
 from urlparse import urlparse, urljoin
-
 import os
+import json
+
 from flask import Flask, session, request, render_template, redirect, url_for, g, flash
 from itsdangerous import URLSafeTimedSerializer
 from google.appengine.ext import ndb
@@ -39,45 +40,69 @@ app.register_blueprint(oauth)
 def home():
 	return render_template('home.html')
 
-@app.route('/tlogin', methods=('GET', 'POST'))
-def touchLogin():
-	#call user authorization and all that stuff
-	if request.form.get("username"):
-		user = lookupByUsername(username)
-		if user:
-			requestInDB = Request.query(Request.username == username).get()
-			if not request:
-				verifyUser(request.form.get("username"), "Touch Login")
-				return FunctionReturn("Pending.", 6)
-			elif requestInDB.resolved == -1:
-				return FunctionReturn("Authentication Request Timed Out",  4)
-			elif requestInDB.resolved == 0:
-				return FunctionReturn("Pending.", 6)
-			elif requestInDB.resolved == 1:
-				session["username"]=username
-				return FunctionReturn("Authenticated",  0)
-		else:
-			return FunctionReturn("User does not exist",  1)
-	else:
-		return FunctionReturn("Username is not there.", 5)
-
-@app.route('/login', methods=('GET', 'POST'))
+@app.route('/login/', methods=('GET','POST'))
 def login():
+	clientId = request.args.get("clid") or "Touch Login"
 	next = request.args.get("next")
-	if request.method == 'POST':
-		username, password = request.form.get('username'), request.form.get('password')	#YES I KNOW WE'LL SWITCH TO HASHES AT SOME POINT
-		next = request.form.get("next")	#if referred from oauth flow
-		if validateUser(username, password):
-			session['username'] = username
-			if next and validateRedirect(next):
-				return redirect(next)
+	logging.debug(next)
+	#call user authorization and all that stuff
+	if request.method == 'POST':	#i.e. ajax call
+		next = request.json.get("next")
+		clientId = request.json.get("clid") or "Touch Login"
+		if request.json.get("username"):
+			user = lookupByUsername(request.json.get("username"))
+			if user:
+				requestInDB = Request.query(Request.username == user.username).get()
+				# logging.debug(str(requestInDB))
+				if not requestInDB:
+					# logging.debug("request submitted")
+					verifyUser(user.username, clientId)
+					return json.dumps(vars(FunctionReturn("Request submitted.", 6)))
+				elif requestInDB.resolved == -1:
+					flash("Authentication request timed out. Please try again.")
+					# logging.debug("2")
+					requestInDB.key.delete()
+					return json.dumps(vars(FunctionReturn("Authentication request timed out. Please try again.",  4)))
+				elif requestInDB.resolved == 0:
+					lo#gging.debug("3")
+					return json.dumps(vars(FunctionReturn("Waiting for response from linked device.", 6)))
+				elif requestInDB.resolved == 1:
+					#logging.debug("4")
+					session["username"]=user.username
+					requestInDB.key.delete()
+					logging.debug(next)
+					if next and validateRedirect(next):
+						logging.debug("redirecting to " + next)
+						return json.dumps(vars(FunctionReturn(next,  0)))
+					else:
+						return json.dumps(vars(FunctionReturn(url_for("home"),  0)))
 			else:
-				return redirect(url_for("home"))
+				# logging.debug("5")
+				return json.dumps(vars(FunctionReturn("User does not exist",  1)))
 		else:
-			flash("Invalid credentials")
-			return redirect(url_for("login"))
+			# logging.debug("6")
+			return json.dumps(FunctionReturn("Username is not there.", 5))
+	else:
+		# logging.debug("7")
+		return render_template('login.html', next = next, clientId = clientId)
 
-	return render_template('login.html', next = next, )
+# @app.route('/login', methods=('GET', 'POST'))
+# def login():
+# 	next = request.args.get("next")
+# 	if request.method == 'POST':
+# 		username, password = request.form.get('username'), request.form.get('password')	#YES I KNOW WE'LL SWITCH TO HASHES AT SOME POINT
+# 		next = request.form.get("next")	#if referred from oauth flow
+# 		if validateUser(username, password):
+# 			session['username'] = username
+# 			if next and validateRedirect(next):
+# 				return redirect(next)
+# 			else:
+# 				return redirect(url_for("home"))
+# 		else:
+# 			flash("Invalid credentials")
+# 			return redirect(url_for("login"))
+
+# 	return render_template('login.html', next = next)
 
 @app.route("/register/", methods = ("GET", "POST"))
 def register():
@@ -202,11 +227,13 @@ def validateUser(username, password):
 def validateRedirect(target):
 	host_url = urlparse(request.host_url)
 	redirect_url = urlparse(urljoin(request.host_url, target))
+	logging.critical(str(redirect_url))
 	return redirect_url.scheme in ('http', 'https') and host_url.netloc == redirect_url.netloc
 
 @app.template_filter('autoversion')	#so that js scripts don't cache
 def autoversion_filter(filename):
 	# determining fullpath might be project specific
-	timestamp = datetime.now().second
+	now = datetime.now()
+	timestamp = str(now.minute) + str(now.second)
 	newfilename = "{0}?v={1}".format(filename, timestamp)
 	return newfilename
