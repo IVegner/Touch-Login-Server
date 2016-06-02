@@ -1,15 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title></title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
+<div id="content" class="container">
 	{% if user%}
-	<h2>Greetings, {{user.firstName}}</h2>
-	<p>{{user}}</p>
+	<h2 class="intro">Thank you for creating an account!</h2>
+	<h4 class="intro">Please confirm your information below.</h4>
+	<p>First Name: {{user.firstName}}</p>
+	<p>Last Name: {{user.lastName}}</p>
+	<p>Birthday: {{user.birthday}}</p>
+	<p>Email: {{user.email}}</p>
+	<p>Twitter handle: {{user.twitter}}</p>
+	<a class="btn btn-primary" href="/continue">Confirm and continue</a>
+	{% else %}
+	<h2 class="intro">Welcome!</h2>
+	<h4 class="intro">Please create an account to save your photos online.</h4>
+	<div class="text-center">
+		<a class="btn btn-primary" href="http://touch-login.appspot.com/oauth/authorize?id={{id}}" target = "_blank">Register with TouchLogin</a>
+	</div>
 	{% endif %}
-	<a href="http://localhost:8080/oauth/authorize?id={{id}}" target = "_blank">Log in with TouchLogin</a>
-	<a href="/logout">Log Out</a>
-</body>
-</html>
+</div>
+{% endblock %}

@@ -25,48 +25,45 @@ $(document).ready(function() {
 
 	$("#touchLoginForm").submit(function(){
 		if($("#touchLoginForm").valid()){
+			var message = "Pending"
+			var count = 0;
+			ellipsisAnimation = setInterval(function(){		//start the ellipsis animation
+				count++;
+				var dots = new Array(count % 10).join('.');
+				$('#authStatusMessage').text(message+dots);
+			}, 1000);
+
 			var username = $("#username").val();
 			var next = $("#next").val();
 			var clid = $("#clid").val();
 
 			$("#touchLoginStatus").show(300);
 			$(".tabbed").hide();
-			checkStatus(username, next, clid);
+
+			console.log("Request sent.")
+			$.ajax({
+				url:"/login/",
+				type:"POST",
+				data: JSON.stringify({ username: username, next: next, clid: clid }),
+				contentType:"application/json; charset=utf-8",
+				dataType:"json",
+				success: function(data){
+					console.log(data);
+					var code = parseInt(data["authStatusCode"]);
+					if (code == 0){	//success, redirect.
+						window.location.href = data["returnMessage"];
+					}
+					else { //Some error or timeout
+						location.reload();
+					}
+				}
+			})
 		}
 	});
 });
 
 function checkStatus(username, next, clid){
-	console.log("Request sent.")
-	var message = "Pending"
-	var count = 0;
-	ellipsisAnimation = setInterval(function(){		//start the ellipsis animation
-		count++;
-		var dots = new Array(count % 10).join('.');
-		$('#authStatusMessage').text(message+dots);
-	}, 1000);
 
-	$.ajax({
-		url:"/login/",
-		type:"POST",
-		data: JSON.stringify({ username: username, next: next, clid: clid }),
-		contentType:"application/json; charset=utf-8",
-		dataType:"json",
-		success: function(data){
-			console.log(data);
-			var code = parseInt(data["authStatusCode"]);
-			if (code == 0){
-				window.location.href = data["returnMessage"];
-			}
-			else if (code == 4 || code == 5){
-				location.reload();
-			}
-			else{
-				message = data["returnMessage"];
-				setTimeout(checkStatus(username, next, clid), 100);
-			}
-		}
-	})
 }
 
 

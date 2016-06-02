@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>My Photos</title>
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<style>
+		body{
+			background-color: #00b3fe;
+			height: 100vh;
+		}
+		#content{
+			background-color: #f2f2f2;
+			height: 80%; 
+			width: 80%;
+			margin: auto;
+			position: absolute;
+			top: 0; left: 0; bottom: 0; right: 0;
+		}
+		button a{
+			text-decoration: none;
+			color: white;
+		}
+
+		.intro{
+			text-align:center;
+		}
+
+		.navbar-brand {
+		  transform: translateX(-50%);
+		  left: 50%;
+		  position: absolute;
+		  color:white;
+		}
+	</style>
+</head>
+<body>
+<nav class="navbar navbar-inverse" id="topNavbar">
+	<div class = "container-fluid">
+		<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span> 
+		</button>
+
+		<div class="navbar-header">
+			<a class="navbar-brand" style="color:white" href="{{ url_for("home") }}">MyPhotosOnline</a>
+		</div>
+	</div>
+</nav>
+{% block content %}
+{% endblock %}
+
+</body>
+</html>

@@ -74,7 +74,8 @@ def getUserData():
 	if tokenInDB and request.args.get("client_secret") == client.client_secret:
 		user = tokenInDB.user.get()
 		logging.warning("USER FROM GETUSERDATA: " + str(user))
-		return jsonify({"firstName": user.firstName, "username": user.username})
+		return jsonify({"firstName": user.firstName, "lastName": user.lastName, "birthday": str(user.birthday), 
+						"username": user.username, "email": user.email, "twitter": user.twitter})
 	else:
 		return jsonify({"error": "Invalid token or credentials"})
 

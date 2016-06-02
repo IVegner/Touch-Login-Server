@@ -19,13 +19,15 @@
 	
 
 	{% block content %}
-	<p>Client: {{ client.client_id }}</p>
-	<p>User: {{ g.user.username }}</p>
-	<form action="/oauth/getcode" method="post">
-		<p>Allow access?</p>
-		<input type="hidden" name="client_id" value="{{ client.client_id }}">
-		<input type="hidden" name="redirect_uri" value="{{ client.redirect_url }}">
-		<input type="submit" name="confirm_yes" value="yes">
-		<input type="submit" name="confirm_no" value="no">
-	</form>
+	<div class="center-block">
+		<p>Client: {{ client.client_id }}</p>
+		<p>User: {{ g.user.username }}</p>
+		<form action="/oauth/getcode" method="post">
+			<p>Allow access?</p>
+			<input type="hidden" name="client_id" value="{{ client.client_id }}">
+			<input type="hidden" name="redirect_uri" value="{{ client.redirect_url }}">
+			<input type="submit" class="btn btn-primary" name="confirm_yes" value="yes">
+			<input type="submit" class="btn btn-primary" name="confirm_no" value="no">
+		</form>
+	</div>
 	{% endblock %}

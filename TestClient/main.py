@@ -39,6 +39,10 @@ def logout():
 	flash("You have been logged out", "success")
 	return redirect(url_for("home"))
 
+@app.route("/continue")
+def example_continue():
+	return render_template("example_continue.html")
+	
 # if __name__ == '__main__':
 # 	run_simple('localhost', 5000, app,
 # 			   use_reloader=True, use_debugger=True, use_evalex=True)

@@ -52,35 +52,32 @@ def login():
 		if request.json.get("username"):
 			user = lookupByUsername(request.json.get("username"))
 			if user:
-				requestInDB = Request.query(Request.username == user.username).get()
-				# logging.debug(str(requestInDB))
-				if not requestInDB:
-					# logging.debug("request submitted")
-					verifyUser(user.username, clientId)
-					return json.dumps(vars(FunctionReturn("Request submitted.", 6)))
-				elif requestInDB.resolved == -1:
-					flash("Authentication request timed out. Please try again.")
-					# logging.debug("2")
-					requestInDB.key.delete()
-					return json.dumps(vars(FunctionReturn("Authentication request timed out. Please try again.",  4)))
-				elif requestInDB.resolved == 0:
-					lo#gging.debug("3")
-					return json.dumps(vars(FunctionReturn("Waiting for response from linked device.", 6)))
-				elif requestInDB.resolved == 1:
+				statusRequest = verifyUser(user, clientId)
+				if statusRequest.resolved == 1:	#SUCCESSFUL AUTH
 					#logging.debug("4")
 					session["username"]=user.username
-					requestInDB.key.delete()
 					logging.debug(next)
+					statusRequest.key.delete()
 					if next and validateRedirect(next):
 						logging.debug("redirecting to " + next)
 						return json.dumps(vars(FunctionReturn(next,  0)))
 					else:
 						return json.dumps(vars(FunctionReturn(url_for("home"),  0)))
+				elif statusRequest.resolved == -1:	#Timed out
+					flash("Authentication request timed out. Please try again.", "error")
+					statusRequest.key.delete()
+					# logging.debug("2")
+					return json.dumps(vars(FunctionReturn("Authentication request timed out. Please try again.",  4)))
+				else:	#If this fires, shit has been messed up.
+					logging.critical(request)
+					return json.dumps(vars(FunctionReturn("No idea what happened.",  4)))	#Force reload on client-side
 			else:
 				# logging.debug("5")
+				flash("User does not exist.", "error")
 				return json.dumps(vars(FunctionReturn("User does not exist",  1)))
 		else:
 			# logging.debug("6")
+			flash("Imma need a username, bruh.", "error")
 			return json.dumps(FunctionReturn("Username is not there.", 5))
 	else:
 		# logging.debug("7")

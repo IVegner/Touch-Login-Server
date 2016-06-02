@@ -21,6 +21,7 @@ class User(ndb.Model):	#database entity class with a bunch of properties
 	admin = ndb.BooleanProperty(default=False)
 	confirmed = ndb.BooleanProperty(default=False)
 	confirmedOn = ndb.DateTimeProperty()
+	twitter = ndb.StringProperty()
 
 class Client(ndb.Model):			
 	'''this is the permanent client record'''
