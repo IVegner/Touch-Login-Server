@@ -28,12 +28,8 @@
 
 		<div class="collapse navbar-collapse" id="navbar">
 			<ul class="nav navbar-nav navbar-right">
-				{% if not g.user %}
-				<li><a href="{{ url_for('login') }}">Log In</a> </li>
-				{% else %}
-				<li><a href="/profile"><span class="glyphicon glyphicon-user"></span> {{g.user.username}}</a></li>
-				<li><a href="{{ url_for('logout') }}">Logout</a></li>
-				{% endif %}
+				<li><a href="">Home</a></li>
+				<li><a href="{{url_for('developerHome')}}">Developers</a></li>
 			</ul>
 		</div>
 	</div>

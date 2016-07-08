@@ -3,11 +3,5 @@
 	{% block outsideContainer %}
 	{% endblock %}
 	{% block content %}
-		{% if g.user %}
-			<p>Welcome, {{g.user.firstName}}!</p>
-		{% else %}
-			<p>Welcome, guest!</p>
-		{% endif %}
-		<a class="btn btn-primary" href = {{url_for("login")}}>Login</a>
-		<a class="btn btn-primary" href = {{url_for("register")}}>Register</a>
+		<h1> Insert Home Page Here </h1>
 	{% endblock %}
