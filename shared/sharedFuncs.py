@@ -30,3 +30,10 @@ def lookupByUsername(username):
 		return user
 	else:
 		return None
+
+def lookupClientByName(name):
+	client = Client.query(Client.name == name).get()
+	if client is not None:
+		return client
+	else:
+		return None

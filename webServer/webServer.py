@@ -13,8 +13,8 @@ from itsdangerous import URLSafeTimedSerializer
 from google.appengine.ext import ndb
 
 from shared.models import Client, AuthCode, Token, User, Request
-from forms import registerForm
-from shared.sharedFuncs import login_required, lookupByUsername
+from forms import clientRegisterForm
+from shared.sharedFuncs import login_required, lookupByUsername, lookupClientByName
 from config import BaseConfig
 from api.api_functions import verifyUser, FunctionReturn
 
@@ -36,9 +36,38 @@ def home():
 def developerHome():
 	return render_template("developerHome.html")
 
-@app.route("/developers/clientRegister")
+@app.route("/developers/clientRegister", methods=("GET", "POST"))
 def devClientRegister():
-	return "Pending" #render_template("developerHome.html")
+	form = clientRegisterForm()
+	if form.validate_on_submit():
+		client = Client(
+			name = form.clientName.data, #for convenience
+			client_id = "",
+			client_secret = "",
+		#	scopes = ndb.StringProperty()
+			redirect_url = "",
+			email = form.email.data,
+			password = form.password.data,
+			confirmed = False
+		)
+		sendConfirmEmail(form.email.data)
+
+		session["client"] = form.clientName.data;
+
+		if not os.environ['SERVER_SOFTWARE'].startswith('Development'):	#if production, cuz mail doesn't work on dev.
+			flash("Thanks for registering your client! A confirmation link has been sent to your email address.")
+			return redirect(url_for("developerDashboard"))
+		else:
+			token = URLSafeTimedSerializer(app.config['SECRET_KEY']).dumps(user.key.urlsafe(), salt=app.config['SECURITY_PASSWORD_SALT'])
+			confirm_url = url_for("confirmEmail", token = token, _external = True)
+			return "<a href={0}>Confirm</a>".format(confirm_url)	#let developer do it manually
+
+	return render_template("developerRegister.html", form = form)
+	# return render_template("devClientRegister.html")
+
+@app.route("/developers/dashboard/")
+def developerDashboard():
+	return "Placeholder"
 
 
 # @app.route('/login/', methods=('GET','POST'))

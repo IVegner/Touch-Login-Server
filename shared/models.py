@@ -32,6 +32,8 @@ class Client(ndb.Model):
 #	scopes = ndb.StringProperty()
 	redirect_url = ndb.StringProperty()
 	email = ndb.StringProperty()
+	password = ndb.StringProperty()
+	confirmed = ndb.BooleanProperty(default=False)
 
 class AuthCode(ndb.Model):		
 	'''this is the temporary authorization token that is used to get an access token. Better to put in cache, but whatevs.'''

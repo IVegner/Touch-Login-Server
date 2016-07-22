@@ -1,0 +1,25 @@
+{% from "_formhelpers.html" import render_field %}
+{% extends "base.html" %}
+	{% block title %}TouchLogin - Register{% endblock %}
+	{% block scripts %}<!-- <script type="text/javascript" src="{{ url_for('static', filename='js/register.js') }}">"></script> -->{% endblock %}
+	{% block content %}
+	<div>
+		<p>Before registering, please install the TouchLogin app, as there will be a code you must enter in the app at the end of the registration to associate your phone with your account.</p>
+		<strong><h2>Register:</h2></strong>
+		<div id="regForm">
+			<form role="form" method="POST" action="/developers/clientRegister">
+				<div class="form-group">
+					{{ form.hidden_tag() }}
+					{{render_field(form.clientName)}}
+					{{render_field(form.website)}}
+					{{render_field(form.email)}}
+					{{render_field(form.password)}}
+					{{render_field(form.confirmPassword)}}
+					{{render_field(form.agreeToTerms)}}
+				</div>
+				<button class="btn btn-primary" type="submit">Register</button>
+			</form>
+		</div>
+	</div>
+	{% endblock %}
+
